@@ -1,48 +1,112 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from 'react';
-import { auth } from '../firebaseConfig'; // Import auth from your config
+// Firebase auth instance shared across screens
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { auth } from '../firebaseConfig';
 
-// A simple web-compatible component for user login
 const LoginScreen = ({ onSwitchToSignUp }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleLogin = async () => {
-    setError(''); // Reset error
+    setError('');
     if (!email || !password) {
-        setError("Please enter an email and password.");
-        return;
+      setError("Please enter both email and password.");
+      return;
     }
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged in App.js will handle navigation
     } catch (err) {
-      setError(err.message); // Show an error if login fails
+      setError("Invalid email or password. Please try again.");
     }
-  };
-  
-  const styles = {
-    container: { padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100vh', justifyContent: 'center' },
-    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-    input: { width: '80%', maxWidth: 300, padding: 10, marginBottom: 10, border: '1px solid #ccc', borderRadius: 5 },
-    button: { width: '80%', maxWidth: 300, padding: 15, backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: 5, cursor: 'pointer', fontSize: 16 },
-    errorText: { color: 'red', marginTop: 10 },
-    switchText: { color: 'blue', cursor: 'pointer', marginTop: 15, textDecoration: 'underline' }
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Welcome Back to Purrlys</h2>
-      <input style={styles.input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-      <input style={styles.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-      <button style={styles.button} onClick={handleLogin}>Log In</button>
-      {error && <p style={styles.errorText}>{error}</p>}
-      <p style={styles.switchText} onClick={onSwitchToSignUp}>
-        Don't have an account? Sign Up
-      </p>
-    </div>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <Text style={styles.title}>Welcome Back</Text>
+      <TextInput
+        style={styles.input}
+        value={email}
+        onChangeText={setEmail}
+        placeholder="Email"
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      <TextInput
+        style={styles.input}
+        value={password}
+        onChangeText={setPassword}
+        placeholder="Password"
+        secureTextEntry
+      />
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Log In</Text>
+      </TouchableOpacity>
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      <TouchableOpacity onPress={onSwitchToSignUp} style={styles.switchButton}>
+        <Text style={styles.switchText}>Don't have an account? Sign Up</Text>
+      </TouchableOpacity>
+    </KeyboardAvoidingView>
   );
 };
 
+// --- Styles ---
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+      backgroundColor: '#f5f5f5'
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      marginBottom: 30,
+      color: '#333'
+    },
+    input: {
+      width: '100%',
+      height: 50,
+      backgroundColor: 'white',
+      paddingHorizontal: 15,
+      borderRadius: 10,
+      marginBottom: 15,
+      borderWidth: 1,
+      borderColor: '#ddd'
+    },
+    button: {
+      width: '100%',
+      height: 50,
+      backgroundColor: '#007bff',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 10,
+      marginTop: 10
+    },
+    buttonText: {
+      color: 'white',
+      fontSize: 18,
+      fontWeight: 'bold'
+    },
+    errorText: {
+      color: 'red',
+      marginTop: 15,
+      textAlign: 'center'
+    },
+    switchButton: {
+      marginTop: 20,
+      padding: 10
+    },
+    switchText: {
+      color: '#007bff',
+      fontSize: 16
+    }
+});
+
 export default LoginScreen;
+
